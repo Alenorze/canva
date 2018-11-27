@@ -1,0 +1,879 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block main-nav %}{% with ActiveMenu="faq" %}{{ block.super }}{% endwith %}{% endblock %}
+
+
+{% block extra_css %}
+<style>
+    .rightBlock{
+		  height: 60vh;
+		  overflow-x: hidden;
+		  overflow-y:scroll;
+	  }
+	  .blockSend{
+		  right: 30px;
+		  bottom: 90px;
+	  }
+	  .canvasWrapper{
+		  width: 100%;
+		  max-width: 1360px;
+		  padding-left: 30px;
+		  padding-right: 30px;
+		  position: relative;
+		  height: calc(100vh - 70px);
+	  }
+	  .padBot30{
+		  padding-bottom: 0;
+	  }
+	  .send-item{
+		  margin-left: 30px;
+	  }
+	  #selectDoc{
+		  top: 0;
+		  margin-left: 0;
+		  font-family: "Open Sans", sans-serif;
+		  font-size: 13px;
+		  font-weight: 500;
+	  }
+	  #selectDoc span{
+		  font-family: "Open Sans", sans-serif;
+		  font-size: 13px;
+	  }
+	  .selectGrup{
+		  padding: 0;
+		  margin: 0 0 0 29px;
+		  background: white;
+	  }
+	  .backRow{
+		  padding-top: 15px;
+		  padding-bottom: 15px;
+		  background: #f4f4f4;
+		  align-items: center;
+	  }
+	  .breadcrumb{
+		  padding: 0;
+		  margin: 0 0 0 30px;
+		  height: 22px;
+		  background: #f4f4f4;
+	  }
+	  .breadcrumb-item + .breadcrumb-item::before,
+	  .fa-home::before {
+		  color: rgb(145, 169, 189);
+		  font-size: 14px;
+	  }
+	  .fa-caret-down{
+		  display: table;
+	  }
+	  .fa-times-circle{
+		  display: inline-block;
+	  }
+	  .send-item span,
+	  .leftBlock-listItem p{
+		  font-family: 'Poppins', sans-serif;
+		  font-weight: 500;
+	  }
+	  .send-item-2 .fa,
+	  .send-item-7 .fa,
+	  .send-item-9 .fa{
+		  margin-right:31px;
+	  }
+	  .send-item-5 .fa {
+    	  margin-right: 27px;
+	  }
+	  main {
+		background-color: #f4f4f4;
+		}
+  
+  </style>
+
+{% endblock extra_css %}
+
+{% block crumbs %}
+  <li itemprop="itemListElement" class='breadcrumb-item active'
+      itemscope itemtype="{{ request.scheme }}://schema.org/ListItem">
+    <span itemprop="name">{{ object.title }}</span>
+  </li>
+{% endblock %}
+
+{% block content-full %}
+	<div class="container-fluid">
+		<div class="container">
+			<ul class='selectGrup'>
+				<li id="selectDoc">
+					<span id='showUser'>
+						<i class="fa fa-user" aria-hidden="true"></i>
+						select partner
+					</span>
+					<ul class='order-list'></ul>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<div class="container">
+		<div class="canvasWrapper">
+            <div class="rightBlock">
+                <div id='accordion'></div>
+            </div>
+			<div class="leftBlock">
+				<ul class='leftBlock-list'>
+					<li class='leftBlock-listItem' value="1">
+						<span>
+							<i class="fas fa-pencil-square-o" aria-hidden="true"></i>
+						</span>
+						<p>signature</p>
+					</li>
+					<li class='leftBlock-listItem' value="2">
+						<span>
+							<i class="fa fa-pencil-alt" aria-hidden="true"></i>
+						</span>
+						<p>initials</p>
+					</li>
+					<li class='leftBlock-listItem' value="3">
+						<span>
+							<i class="fa fa-calendar" aria-hidden="true"></i>
+						</span>
+						<p>date signed</p>
+					</li>
+					<li class='leftBlock-listItem' value="4">
+						<span>
+							<i class="fa fa-user" aria-hidden="true"></i>
+						</span>
+						<p>name</p>
+					</li>
+					<li class='leftBlock-listItem' value="5">
+						<span>
+							<i class="fa fa-envelope" aria-hidden="true"></i>
+						</span>
+						<p>email</p>
+					</li>
+					<li class='leftBlock-listItem' value="6">
+						<span>
+							<i class="fas fa-building"></i>
+						</span>
+						<p>company</p>
+					</li>
+					<li class='leftBlock-listItem' value="7">
+						<span>
+							<i class="fa fa-file-text" aria-hidden="true"></i>
+						</span>
+						<p>text</p>
+					</li>
+					<li class='leftBlock-listItem' value="9">
+						<span>
+							<i class="fas fa-building" aria-hidden="true"></i>
+						</span>
+						<p>checkbox</p>
+					</li>
+					<li class='leftBlock-listItem note' value="8">
+						<span>
+							<i class="fa fa-pencil-square" aria-hidden="true"></i>
+						</span>
+						<p>note</p>
+					</li>
+				</ul>
+            </div>
+            <div class="canvasBlock">
+                <canvas width='900' height='1000' id='myCanvas'></canvas>
+            </div>
+			<div class="blockSend">
+				<button id='btnSend'>send</button>
+			</div>
+			<div class="blockNote">
+				<i class="fas fa-arrows-alt faArrowsAlt"></i>
+				<textarea name="" id="textareaNote"></textarea>
+				<button id='btnSaveNote'>save</button>
+				<button id='btnCloseNote'>hide</button>
+			</div>
+		</div>
+		<div class="successBlock">
+			<div class="successBlockInfo">
+				<i class="fas fa-times-circle faTimesCircle succBlockInfoFa"></i>
+				<h3>Thanks, data saved successfully!</h3>
+			</div>	
+		</div>
+		<div class="successBlockSign">
+			<div class="successQuestionSign">
+				<h3>Would you like to sign the documents now?</h3>
+				<div class="blockBtn">
+					<a href="client.html" class='signBtn' id='SignNow'>Yes</a>
+					<button id='doNotSign' class='signBtn'>No</button>	
+				</div>
+			</div>	
+		</div>
+    </div>
+        
+
+    {% block extra_js %}
+
+
+	<script>
+	var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    
+    $(document).ready(function () {
+		var textItem = '';
+    	var textSign = '';
+    	var offsetLeft;
+    	var offsetTop;
+    	var positionTop;
+    	var positionLeft;
+		var scrollT = 0;
+    	var scrollL = 0;
+    	var posTop = 0;
+    	var thisVal;
+		var faUser = [];
+    	var dragok = false;
+    	var startX;
+    	var startY;
+		var myCanvas = $("#myCanvas");
+		var posCanvasX = parseInt(myCanvas.offset().left);
+    	var posCanvasY = parseInt(myCanvas.offset().top);
+    	var WIDTH = myCanvas.width();
+    	var HEIGHT = myCanvas.height();
+    	var canvasBlock = $('.canvasBlock');
+
+    	var arrIcons = [`fa-pencil-square-o`, `fa-pencil`, `fa-calendar`, `fa-user`, `fa-envelope`, `fa-building`, `fa-file-text-o`, `fa-pencil-square`, `fa-check-square-o`];
+
+    	var arrIconsJs = [0xf044, 0xf040, 0xf073, 0xf007, 0xf0e0, 0xf1ad, 0xf0f6, 0xf14b, 0xf046];
+
+    	var rects = [];
+    	var rectsLength = 0;
+    	var indexImage;
+
+    	var arrColor = ['70, 180, 211', '0, 255, 255', '245, 245, 95', '255, 0, 226', '255, 192, 203', '0, 128, 0', '255, 140, 0', '127, 255, 0', '255, 228, 196', '220, 20, 60', '255, 20, 147', '30, 144, 255', '255, 165, 0', '127, 255, 212', '255, 0, 0', '95, 158, 160'];
+
+    	var arrColorIconListUsers = ['colorBlue', 'colorAqua', 'colorYellow', 'colorPurple', 'colorPink', 'colorGreen', 'colorDarkorange', 'colorChartreuse', 'colorBisque', 'colorCrimson',
+        'colorDeeppink', 'colorDodgerblue', 'colorOrange', 'colorAquamarine',
+        'colorRed', 'colorCadetblue'];
+
+    	var leftBlockListItem = $('.leftBlock-listItem');
+    	var canvasWrapper = $('.canvasWrapper');
+    	var myCanvas = $('#myCanvas');
+    	var accordion = $("#accordion");
+		var successBlock = $('.successBlock');
+    	var sendItem;
+    	var arrItem = [];
+    	let dataImg;
+    	var icons = {
+    		header: "fas fa-angle-right",
+    		activeHeader: "fas fa-angle-down"
+    	};
+    	var arrInfo = [];
+    	var orderList = $('.order-list');
+    	var image;
+    	var imgHeight;
+    	var imgWidth;
+    	let arrRects = [];
+    	let globalArray = [];
+    	//array of documents
+    	var arrayDoc = [];
+    	//array of clients
+    	var arrayUser = [];
+		var indexDoc;
+        var number = 0;
+    	var iconNum = [];
+    	var iconDownNum = [];
+    	var selectVal = 0;
+		var arrayAgent = [];
+
+
+
+
+		$(window).on('load', function () {
+			$.get('http://localhost:8000/esign/api/documents/', function (data) {
+			dataImg = data;
+			arrayDoc = data;
+			let UlElement;
+			let liElement;
+			let h6Element;
+			jQuery.each(data, function (a, value) {
+				var num = 1 + a;
+				h6Element = `<h6 class='headerDoc' data-index-ul="` + a + `" onclick="$(this).getAttrUl()">Document № ` + num + `</h6>`
+				UlElement = `<ul class="rightBlockImages"></ul>`;
+				accordion.append(h6Element);
+				accordion.append(UlElement);
+				jQuery.each(value.files, function (i, val) {
+					liElement = `<li value="` + i + `" class="rightBlockImg" onclick="$(this).scrollCanvas()"><img src="` + val.file + `"></li>`;
+					$('.rightBlockImages:last').append(liElement);
+				});
+			});
+			accordion.accordion({
+			heightStyle: "content",
+			active: false,
+			collapsible: true,
+			icons: icons
+			});
+		});
+	});
+
+
+		$(window).on('load', function () {
+			$.get('http://localhost:8000/esign/api/request/1/', function (data) {
+    			jQuery.each(data['forms'], function (i, val) {
+					arrayUser[i] = [val];
+					arrInfo.push(val);
+					var liElement = `<li value="` + i + `" class='selectDoc-li' onclick="$(this).defineColor()">
+							<i class="fa fa-user ` + arrColorIconListUsers[i] + `" aria-hidden="true"></i>` + val.name + `</li>`
+					orderList.append(liElement);
+					arrRects[i] = [];
+    			});
+    			createGlobalArray(arrayDoc, arrayUser)
+			});
+		});
+        //create an array of documents
+    	function createGlobalArray(arrayDoc, arrayUser) {
+    		jQuery.each(arrayDoc, function (i, val) {
+    			globalArray[i] = [];
+    			jQuery.each(arrayUser, function (a, value) {
+    				globalArray[i][a] = [];
+    				globalArray[i][a].push({
+    					x: 0,
+    					y: 0,
+    					width: "",
+    					height: "",
+    					fill: "",
+    					isDragging: "false",
+    					resize: "",
+    					text: "",
+    					img: dataImg,
+    					icons: "",
+    					index: 0,
+    					val: 0,
+    					node: "",
+    					signature: {
+    						textsign: "",
+    						add: false,
+    						famely: ""
+    					}
+    				})
+    			});
+    		});
+    	}
+
+		//upload document to canvas
+    	$.fn.getAttrUl = function () {
+			indexDoc = $(this).attr('data-index-ul');
+			let totalHeight = 0;
+			jQuery.each(globalArray[0][0][0].img[indexDoc].files, function (a, value) {
+			image = new Image();
+			image.src = value.file;
+			imgHeight = image.naturalHeight;
+			imgWidth = image.naturalWidth;
+			totalHeight += imgHeight;
+			});
+			myCanvas.removeAttr('height').removeAttr('width').attr('height', totalHeight).attr('width', imgWidth);
+			draw();
+			$('.fauser').hide();
+			$('.fa-caret-down').hide();
+			$('.clas' + indexDoc + '').show();
+			};
+
+    	//canvas scroll 
+    	$.fn.scrollCanvas = function () {
+    		var parentLen = $(this).parent().children().length;
+    		var valueElement = $(this).attr('value');
+    		setTimeout(function () {
+    			var heigCan = myCanvas.attr('height');
+    			var heigElem = heigCan / parentLen;
+    			canvasBlock.animate({
+    				scrollTop: parseInt(heigElem * valueElement)
+    			}, 1500);
+    		}, 1);
+    	}
+		
+		//get scroll value
+    	canvasBlock.on('scroll', function () {
+    		scrollT = $(this).scrollTop();
+    		scrollL = $(this).scrollLeft();
+    	});
+
+		//we trace click on the left block 
+    	leftBlockListItem.on('click', function () {
+    		if ($(this).val() != 8) {
+    			textItem = $(this).children('p').text().toUpperCase();
+    			thisVal = $(this).val();
+    			createItem(textItem, thisVal);
+    		}
+    	});
+
+		//create html-images
+    	function createItem(textItem, num) {
+    	var item = `<p class="send-item send-item-` + num + `">
+        <i class="fa ` + arrIcons[num - 1] + `"></i>
+        <span>` + textItem + `</span>
+        <i class="far fa-times-circle"></i></p>`;
+    		canvasWrapper.append(item);
+    		sendItem = $(".send-item");
+    		$('.fa-times-circle').on('click', function () {
+    			sendItem.remove();
+    		});
+    		if (sendItem.length >= 2) {
+    			sendItem[0].remove();
+    		}
+    		sendItem.draggable({
+    			drag: function (event, ui) {
+    				// Keep the left edge of the element
+    				//at least 100 pixels from the container
+    				ui.position.left = Math.min(710, ui.position.left);
+    				offsetLeft = parseInt(ui.offset.left);
+    				offsetTop = parseInt(ui.offset.top);
+    				positionTop = parseInt(ui.position.top);
+    				posTop = parseInt(positionTop + scrollT);
+    				var resultY = parseInt(posCanvasY + HEIGHT);
+    				var resultX = parseInt(posCanvasX + WIDTH);
+    				if (offsetTop > posCanvasY && offsetTop < resultY && offsetLeft > posCanvasX && offsetLeft < resultX) {
+    					sendItem[0].remove();
+    					positionTop = parseInt(ui.offset.top - posCanvasY);
+    					positionLeft = scrollL + parseInt(ui.offset.left - posCanvasX);
+    					addImage(num);
+    					return false;
+    				}
+    			}
+    		});
+    	};
+
+		//set the html-image color
+    	$.fn.defineColor = function () {
+    		selectVal = $(this).val();
+    		var textLi = $(this).html();
+    		orderList.css('display', 'none');
+    		$('#showUser').html(textLi);
+    	}
+
+		//show customer list 
+    	$('.selectGrup').on('mousemove', function () {
+    		orderList.css('display', 'block');
+    	});
+
+		//add initials
+    	function addInitials(arrName) {
+    		var arr = arrName.split(' ');
+    		var initials = arr[0].substring(0, 1).toUpperCase();
+    		if (arr.length > 1) {
+    			var LastName = arr[arr.length - 1].substring(0, 1).toUpperCase();
+    			initials = initials + '.' + LastName + '.';
+    		} else {
+    			initials = initials + '.';
+    		}
+    		return initials;
+    	}
+
+		//to create canvas-image
+    	function addImage(num) {
+    		if (num === 1) {
+    			textSign = arrInfo[selectVal].name;
+    		} else if (num === 4) {
+    			textItem = arrInfo[selectVal].name;
+    		} else if (num === 5) {
+    			textItem = arrInfo[selectVal].email;
+    		} else if (num === 6) {
+    			textItem = arrInfo[selectVal].company;
+    		} else if (num === 2) {
+    			textItem = addInitials(arrInfo[selectVal].name);
+    		}
+    		if (num === 9) {
+    			var widthImg = 70;
+    			textItem = '';
+    		} else {
+    			var widthImg = 180;
+    		}
+    		var unicode = String.fromCharCode(arrIconsJs[thisVal - 1]);
+    		globalArray[indexDoc][selectVal].push({
+    			x: positionLeft,
+    			y: posTop,
+    			width: widthImg,
+    			height: 53,
+    			fill: "rgba(" + arrColor[selectVal] + ", 0.3)",
+    			isDragging: "false",
+    			resize: "",
+    			text: textItem,
+    			img: "",
+    			icons: unicode,
+    			index: rectsLength,
+    			val: thisVal,
+    			node: "",
+    			signature: {
+    				textsign: textSign,
+    				add: false,
+    				famely: ""
+    			}
+    		});
+    		draw();
+    		createIcons(positionLeft, posTop, rectsLength, num);
+    		rectsLength++
+    	}
+
+		//add icons
+    	function createIcons(pL, pT, numberIndex, thisVal) {
+    		if (thisVal == 7) {
+    			var iconDown = `<i class="fa fa-caret-down clas` + indexDoc + `" aria-hidden="true" value='` + rects.length + `' index='` + numberIndex + `'></i>`;
+    			canvasBlock.append(iconDown);
+    			var faDown = $('.fa-caret-down').last();
+
+    			iconDownNum[numberIndex] = faDown;
+    			positionIconDown(pL, pT, numberIndex, 180, 53);
+    		}
+    		let faCaretDown = $('.fa-caret-down')
+    		var resizeImg = false;
+			
+			//resize image text
+    		faCaretDown.on('mousedown', function (e) {
+    			e.preventDefault();
+    			e.stopPropagation();
+
+    			var offset = myCanvas.offset();
+    			var posX = parseInt(e.pageX - offset.left);
+    			var posY = parseInt(e.pageY - offset.top);
+
+    			// test each rect to see if mouse is inside
+    			for (var j = 0; j < globalArray[indexDoc].length; j++) {
+    				let rects = globalArray[indexDoc][j];
+    				for (var i = 0; i < rects.length; i++) {
+    					var r = rects[i];
+    					if (posX > r.x && posX < r.x + r.width && posY > r.y && posY < r.y + r.height) {
+    						// if yes, set that rects isDragging=true
+    						resizeImg = true;
+    						r.resize = true;
+    					}
+    				}
+    			}
+    		});
+
+			//resize image text
+    		faCaretDown.on('mouseup', function (e) {
+    			e.preventDefault();
+    			e.stopPropagation();
+    			for (var j = 0; j < globalArray[indexDoc].length; j++) {
+    				let rects = globalArray[indexDoc][j];
+    				for (var i = 0; i < rects.length; i++) {
+    					var r = rects[i];
+    					r.resize = false;
+    					resizeImg = false;
+    				}
+    			}
+    		});
+
+			//resize image text
+    		faCaretDown.on('mouseout', function (e) {
+    			e.preventDefault();
+    			e.stopPropagation();
+    			for (var j = 0; j < globalArray[indexDoc].length; j++) {
+    				let rects = globalArray[indexDoc][j];
+    				for (var i = 0; i < rects.length; i++) {
+    					var r = rects[i];
+    					r.resize = false;
+    					resizeImg = false;
+    				}
+    			}
+    		});
+
+			//resize image text
+    		faCaretDown.on('mousemove', function (e) {
+    			e.preventDefault();
+    			e.stopPropagation();
+    			var offset = myCanvas.offset();
+    			var posX = parseInt(e.pageX - offset.left);
+    			var posY = parseInt(e.pageY - offset.top);
+    			var indexImg = $(this).attr('index');
+    			var widthImg;
+    			var heightImg;
+    			if (resizeImg == true) {
+    				for (var j = 0; j < globalArray[indexDoc].length; j++) {
+    					let rects = globalArray[indexDoc][j];
+    					for (var i = 0; i < rects.length; i++) {
+    						var r = rects[i];
+    						if (posX > r.x && posX < r.x + r.width && posY > r.y && posY < r.y + r.height) {
+    							widthImg = (posX + 10) - r.x;
+    							if (widthImg < 180) {
+    								widthImg = 180;
+    							}
+    							heightImg = (posY + 10) - r.y;
+    							if (heightImg < 53) {
+    								heightImg = 53;
+    							}
+    							if (r.resize) {
+    								r.width = widthImg;
+    								r.height = heightImg;
+    							}
+
+    							positionIcon(r.x, r.y, indexImg, r.val, r.width);
+    							positionIconDown(r.x, r.y, indexImg, r.width, r.height);
+    						}
+    					}
+    				}
+    				draw();
+    			}
+    		});
+    		var icon = '<i class="far fa-times-circle fauser clas' + indexDoc + '" value="' + rects.length + '" index="' + numberIndex + '"></i>';
+    		canvasBlock.append(icon);
+    		faUser = $('.fauser').last();
+    		iconNum.push(faUser);
+    		positionIcon(pL, pT, numberIndex, thisVal, 180);
+    	}
+
+		//remove canvas-images
+    	canvasBlock.on("click", ".fauser", function (e) {
+    		var countPlayers = $(this).attr('value');
+    		var numberIndex = $(this).attr('index');
+    		countPlayers--
+    		if (iconDownNum[numberIndex]) {
+    			iconDownNum[numberIndex].remove();
+    		}
+    		rects[countPlayers] = {
+    			index: countPlayers
+    		};
+			var offset = myCanvas.offset();
+    		var posX = (e.pageX - offset.left);
+    		var posY = (e.pageY - offset.top);
+
+    		for (var j = 0; j < globalArray[indexDoc].length; j++) {
+    			let rects = globalArray[indexDoc][j];
+    			for (var i = 0; i < rects.length; i++) {
+    				var r = rects[i];
+    				if (posX > r.x && posX < r.x + r.width && posY > r.y && posY < r.y + r.height) {
+    					r.fill = 'transparent';
+    					r.icons = '';
+    					r.text = '';
+    					r.width = 0;
+    					r.height = 0;
+    				}
+    			}
+    		}
+    		draw();
+    		$(this).remove();
+    	});
+
+		//change the position of icons
+    	function positionIcon(pL, pT, number, val, widthImg) {
+    		if (val == 9) {
+    			widthImg = 70;
+    		}
+    		widthImg -= 20;
+    		iconNum[number].css({
+    			left: pL + widthImg,
+    			top: pT + 3
+    		});
+    	}
+
+		//change the position of icons
+    	function positionIconDown(pL, pT, number, widthImg, heightImg) {
+    		widthImg -= 15;
+    		heightImg -= 20;
+    		iconDownNum[number].css({
+    			left: pL + widthImg,
+    			top: pT + heightImg
+    		});
+    	}
+
+    	//draw a single rect
+    	function rect(x, y, w, h) {
+    		ctx.beginPath();
+    		ctx.rect(x, y, w, h);
+    		ctx.closePath();
+    		ctx.fill();
+    	}
+    	//clear the canvas
+    	function clear() {
+    		ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    	}
+		
+    	// redraw the scene
+    	function draw() {
+			clear();
+			jQuery.each(globalArray[0][0][0].img[indexDoc].files, function (a, value) {
+			image = new Image();
+			image.src = value.file;
+			if (image.onload) {
+			image.onload = function () {
+			ctx.drawImage(image, 0, imgHeight * a, imgWidth, imgHeight);
+			}
+			} else {
+			ctx.drawImage(image, 0, imgHeight * a, imgWidth, imgHeight);
+			}
+			});
+			ctx.fillStyle = "rgba(255, 235, 0, 0)";
+			rect(0, 0, WIDTH, HEIGHT);
+			// redraw each rect in the rects[] array
+			for (var j = 0; j < globalArray[indexDoc].length; j++) {
+			let rects = globalArray[indexDoc][j];
+			//console.log(rects)
+			for (var i = 0; i < rects.length; i++) {
+			var r = rects[i];
+			var posX = r.x + 40;
+			var posY = r.y + 30;
+			var posIconY = r.y + 32;
+			var posIconX = r.x + 15;
+			ctx.font = "12px Times New Roman";
+			ctx.fillStyle = r.fill;
+			rect(r.x, r.y, r.width, r.height);
+			ctx.fillStyle = "#46b4d3";
+			ctx.fillText(r.text, posX, posY);
+			ctx.font = '20px FontAwesome';
+			ctx.fillText(r.icons, posIconX, posIconY);
+			}
+			}
+			for (var n = 1; n < globalArray[indexDoc][selectVal].length; n++) {
+			var f = globalArray[indexDoc][selectVal][n];
+			ctx.lineWidth = 3;
+			ctx.strokeStyle = '#fff500';
+			ctx.strokeRect(f.x, f.y, f.width, f.height);
+			}
+			}
+
+		//change the position of canvas-image
+    	myCanvas.on('mousedown', function (e) {
+    		// handle mousedown events
+    		// tell the browser we're handling this mouse event
+    		e.preventDefault();
+    		e.stopPropagation();
+    		// get the current mouse position
+    		var offset = $(this).offset();
+    		var mx = (event.pageX - offset.left);
+    		var my = (event.pageY - offset.top);
+    		// test each rect to see if mouse is inside
+    		dragok = false;
+    		for (var j = 0; j < globalArray[indexDoc].length; j++) {
+    			let rects = globalArray[indexDoc][j];
+    			for (var i = 0; i < rects.length; i++) {
+    				var r = rects[i];
+    				if (mx > r.x && mx < r.x + r.width && my > r.y && my < r.y + r.height) {
+    					// if yes, set that rects isDragging=true
+    					dragok = true;
+    					r.isDragging = true;
+    				}
+    			}
+    		}
+    		// save the current mouse position
+    		startX = mx;
+    		startY = my;
+
+    	});
+
+		//change the position of canvas-image
+    	myCanvas.on('mouseup', function () {
+    		dragok = false;
+    		for (var j = 0; j < globalArray[indexDoc].length; j++) {
+    			let rects = globalArray[indexDoc][j];
+    			for (var i = 0; i < rects.length; i++) {
+    				var r = rects[i];
+    				rects[i].isDragging = false;
+    			}
+    		}
+    	});
+		
+		//change the position of canvas-image
+    	myCanvas.on('mousemove', function (e) {
+    		// if we're dragging anything...
+    		if (dragok) {
+    			// tell the browser we're handling this mouse event
+    			e.preventDefault();
+    			e.stopPropagation();
+    			// get the current mouse position
+    			var offset = $(this).offset();
+    			var mx = (event.pageX - offset.left);
+    			var my = (event.pageY - offset.top);
+
+    			// calculate the distance the mouse has moved
+    			// since the last mousemove
+    			var dx = mx - startX;
+    			var dy = my - startY;
+    			// move each rect that isDragging 
+    			// by the distance the mouse has moved
+    			// since the last mousemove
+    			for (var j = 0; j < globalArray[indexDoc].length; j++) {
+    				let rects = globalArray[indexDoc][j];
+    				for (var i = 1; i < rects.length; i++) {
+    					var r = rects[i];
+    					if (r.isDragging) {
+    						r.x += dx;
+    						r.y += dy;
+    					}
+    					if (r.val == 7) {
+    						var result = r.index + 1;
+    						positionIconDown(r.x, r.y, r.index, r.width, r.height);
+    						positionIcon(r.x, r.y, r.index, r.val, r.width);
+    					} else {
+    						positionIcon(r.x, r.y, r.index, r.val, r.width);
+    					}
+    				}
+    			}
+    			// redraw the scene with the new rect positions
+    			draw();
+    			// reset the starting mouse position for the next mousemove
+    			startX = mx;
+    			startY = my;
+    		}
+    	});
+
+        //move block node
+    	$('.blockNote').draggable({
+    		handle: ".faArrowsAlt"
+    	});
+
+		//show block node
+    	$('.note').on('click', function () {
+    		$('.blockNote').fadeIn(500);
+    	});
+
+		//hide block node
+    	$('#btnCloseNote').on('click', function () {
+    		$(this).parent().fadeOut(500);
+    	});
+
+		//save note 
+    	$('#btnSaveNote').on('click', function () {
+    		var textareaNote = $('#textareaNote');
+    		var num = globalArray[indexDoc][selectVal].length;
+    		var textNote = textareaNote.val();
+    		num--
+    		globalArray[indexDoc][selectVal][num].node = textNote;
+    		textareaNote.val('');
+    		$(this).parent().fadeOut(500);
+    	});
+
+		$.get('http://localhost:8000/esign/api/user/', function(data) {
+			data['name'] = data['first_name'] + ' ' + data['last_name'];
+			arrayAgent = data;
+		});
+	
+		//send data
+    	$('#btnSend').on('click', function () {
+    		var info = $('.selectDoc-li:first').text();
+			info = jQuery.trim(info);
+			data = {} 
+			data['agent'] = globalArray;
+    		$.ajax({
+    			url: 'http://localhost:8000/esign/api/request/',
+    			type: 'PUT',
+    			crossDomain: true,
+    			data: JSON.stringify(data),
+    			contentType: 'application/json; charset=utf-8',
+    			dataType: 'json',
+    			async: false,
+    			success: function () {
+    				if (info == arrayAgent.name) {
+    					$('.successBlockSign').css('display', 'block');
+    				} else {
+    					successBlock.css('display', 'block');
+    				}
+    			}
+    		});
+    	});
+
+    	$('.succBlockInfoFa').click(function () {
+    		$(this).parent().parent().hide();
+    	});
+
+    	$('#doNotSign').click(function () {
+    		$(this).parent().parent().parent().hide();
+    	});
+
+    });
+		</script>
+    {% endblock extra_js %}
+
+  {% if request.user.is_authenticated %}
+    {% include "includes/mobile_sidebar.html" %}
+  {% endif %}
+{% endblock %}

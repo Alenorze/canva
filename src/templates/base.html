@@ -1,0 +1,552 @@
+<!DOCTYPE html>{% load staticfiles i18n %}
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="{% if seo.keywords %}{{seo.keywords}}{% else %}{% block keywords %}{% endblock %}{% endif %}">
+  <meta name="description" content="{% if seo.description %}{{seo.description}}{% else %}{% block description %}{% endblock %}{% endif %}">
+
+
+  <!-- For sharing to social network -->
+  <meta property="og:title" content="{% if seo.title %}{{ seo.title }}{% else %}{{ site.name }}{% endif %}"/>
+  <meta property="og:type" content="company"/>
+  <meta property="og:url" content="{{ site.domain }}"/>
+  <meta property="og:image" content="{% static 'images/rionta-name.png' %}"/>
+  <meta property="og:site_name" content="{{ site.name }}"/>
+  <meta property="og:description" content="{% if seo.description %}{{seo.description}}{% else %}{{ site.name }}{% endif %}"/>
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="image_src" href="{% block image_src %}{% static 'images/rionta-name.png' %}{% endblock %}"/>
+  <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+  <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <link rel="stylesheet" href="{% static 'css/jquery-confirm.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/datetimepicker/datetimepicker.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" media="screen">
+  <link rel="stylesheet" href="{% static 'css/esign_style.css' %}">
+  {% block extra_css %}{% endblock extra_css %}
+  <link href="https://fonts.googleapis.com/css?family=Fira+Sans:400,500,700" rel="stylesheet">
+</head>
+
+
+<body>
+<div id="wrapper" class="{% block wrapper-class %}{% endblock %}">
+  {% include "includes/base_messages.html" %}
+  {% block header %}
+    <header id="header" class="{% block header-class %}{% if request.user.is_authenticated %}header-auth-main{% endif %}{% endblock %}">
+      <nav class="navbar navbar-expand-md navbar-light">
+        <div class="right-back">
+            <div class="container {% if not request.user.is_authenticated or request.user.is_client %}dark-back{% endif %} top-container"></div>
+        </div>
+        <div class="container position-relative">
+          {% if request.user.is_authenticated %}
+            <button href="#profile-menu-sidebar" class='js-toggle-offcanvas navbar-toggler d-md-none'>
+              <i class="fas fa-fw fa-bars"></i>
+            </button>
+          {% endif %}
+
+          <a class="navbar-brand"
+            href="{% if request.user.is_authenticated %}{{ request.user.get_profile_url }}{% else %}{% endif %}">
+            {% if request.user.is_authenticated %}
+              <img class='d-none d-md-block'
+                  src="{% static 'images/rionta-logo-new.png' %}"
+                  alt="{% trans 'Rionta big logotype' %}">
+              <img class='d-md-none' src="{% static 'images/rionta-logo-new.png' %}"
+                  alt="{% trans 'Rionta small logotype' %}">
+            {% else %}
+              <img class='logo-big' src="{% static 'images/rionta-logo-new.png' %}"
+                alt="{% trans 'Rionta logotype' %}">
+              <img class='logo-small' src="{% static 'images/rionta-logo-new.png' %}"
+                  alt="{% trans 'Rionta small logotype' %}">
+            {% endif %}
+          </a>
+
+          <button class="navbar-toggler"
+              type="button" data-toggle="collapse"
+              data-target="#navbarSupportedContent"
+              aria-controls="navbarSupportedContent"
+              aria-expanded="false"
+              aria-label="Toggle navigation">
+            <img src="{% static "images/toggler.png" %}">
+          </button>
+
+          <div class="collapse  navbar-toggleable-sm navbar-collapse" id="navbarSupportedContent">
+            {% block main-nav %}
+              <div class="navigation top-menu">
+                <ul class="navbar-nav">
+                  <li class="nav-item {% if ActiveMenu == '' %}active{% endif %}">
+                    <a class='nav-link' href="">
+                      {% trans 'How-To' %}
+                    </a>
+                  </li>
+
+                  {% if request.user.is_authenticated %}
+              <li class="nav-item {% if ActiveMenu == '' %}active{% endif %} user-profile-item">
+
+                <a href="{{ request.user.get_profile_url }}" class="nav-link user-profile-link">
+                  {% trans "Hi" %}, <span class="text-light-blue text-capitalize">{{ request.user.first_name|truncatechars:'17' }}</span>
+        
+                </a>
+             </li>
+             <li class="nav-item {% if ActiveMenu == '' %}active{% endif %}">
+
+                <a href="" class='nav-link'>
+                  {% trans "Log out" %}
+                  <i class="fas fa-sign-out-alt"></i>
+                </a>
+              </li>
+            {% else %}
+              <li class="nav-item {% if ActiveMenu == '' %}active{% endif %}">
+                <a href="" class="nav-link js-form-modal js-modal-transparent">
+                  {% trans "Sign in" %}
+                  <i class="fas fa-sign-in-alt"></i>
+                </a>
+             </li>
+             <li class="nav-item {% if ActiveMenu == '' %}active{% endif %}">
+                  <a class="js-form-modal js-modal-transparent nav-link"
+                    href="#"
+                    data-url="">
+                    {% trans "Sign up" %}
+                    <i class="fas fa-user-plus"></i>
+                  </a>
+              </li>
+
+            {% endif %}
+                  
+                  {% if request.user.is_authenticated %}
+                    <li class="d-block d-md-none nav-item {% if ActiveMenu == '' %}active{% endif %}">
+                      <a href="" class='d-block d-md-none nav-link'>
+                        {% trans "Log out" %}
+                        <i class="fas fa-sign-out-alt"></i>
+                      </a>
+                    </li>
+                  {% endif %}
+                </ul>
+              </div>
+            {% endblock main-nav %}
+          </div>
+
+          
+          {% block header-right %}
+          {#{% if not request.user.is_authenticated or request.user.is_client %}#}
+          <div class="top-right service-right dark-right location-right">
+		    <div class="location">
+		      <div class="container">
+		
+		       <div class="hidden">
+
+		       </div>
+		      </div>
+		    </div>
+          </div>
+          {#{% endif %}#}
+          {% endblock header-right %}
+        </div>
+      </nav>
+    </header>
+    {% block reserve-form %}
+    {% if not is_homepage %}
+    {#{% if not request.user.is_authenticated or request.user.is_client %}#}
+    <div class="dark-back top-right location-outer">
+    <div class="container position-relative">
+	    <div class="location">
+	      <div class="container">
+	     
+	      </div>
+	    </div>
+    </div>
+    </div>
+   {#{% endif %}#}
+   {% endif %}
+   {% endblock %}
+  {% endblock header %}
+
+  {# <!-- BREADCRUMBS --> #}
+  {% block breadcrumbs %}
+    <div class="breadcrumbs-wrap">
+      <div class="container position-relative">
+        <ol class="breadcrumb" itemscope itemtype="{{ request.scheme }}://schema.org/BreadcrumbList">
+          <li itemprop="itemListElement" class='breadcrumb-item'
+                itemscope itemtype="{{ request.scheme }}://schema.org/ListItem">
+            <a itemscope itemtype="{{ request.scheme }}://schema.org/Thing" itemprop="item"
+                href="{% if request.user.is_authenticated and not request.user.is_client %}{{ request.user.get_profile_url }}{% else %}{% endif %}">
+              <i class="fa fa-fw fa-home"></i> <span itemprop="name" class="hidden">{% trans "Home" %}</span>
+            </a>
+          </li>
+          {% block crumbs %}{% endblock %}
+        </ol>
+      </div>
+    </div>
+  {% endblock %}
+
+  <main class='{% if not is_homepage %}padBot30{% endif %} {% block main-class %}{% endblock %}'>
+    {% block content-top %}{% endblock %}
+    {% block content-top-seo %}
+      {% if seo.content_top %}
+        <div class='container'>
+          <div class="row">
+            <div class="col-xs-12">
+              {{ seo.content_top|safe }}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endblock %}
+
+    {% block content-full %}
+      {% block content-sidebar %}{% endblock %}
+      {% block content %}{% endblock %}
+    {% endblock %}
+
+    {% block content-bottom-seo %}
+      {% if seo.content_bottom %}
+        <div class='container'>
+          <div class="row">
+            <div class="col-xs-12">
+              {{ seo.content_bottom|safe }}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    {% endblock %}
+
+    {% block content-bottom %}{% endblock %}
+  </main>
+
+  {% block footer %}
+    <footer id="footer" class="{% block footer-class %}{% endblock %}">
+      {% block sitemap %}
+      <div class="footer-high">
+        <div class="footer-column footer-request dark-back">
+            <div class="footer-inner">
+	            <div class="footer-container footer-left">
+		            <h6 class="text-white text-uppercase">Find top real estate professionals in any major city across the USA</h6>
+		            <div class="row">
+		                <div class="col">
+		                    <ul class="list-unstyled text-light js-footer-locations">
+			                    <li><a href="#">Austin, TX</a></li>
+								<li><a href="#">Baltimore, MD</a></li>
+								<li><a href="#">Boston, MA</a></li>
+								<li><a href="#">Charlotte, NC</a></li>
+								<li><a href="#">Chicago, IL</a></li>
+								<li><a href="#">Columbus, OH</a></li>
+								<li><a href="#">Dallas, TX</a></li>
+								<li><a href="#">Denver, CO</a></li>
+								<li><a href="#">Detroit, MI</a></li>
+		                        <li><a href="#">Houston, TX</a></li>
+		                        <li><a href="#">Indianapolis, IN</a></li>
+		                        <li><a href="#">Boston, MA</a></li>
+		                        <li><a href="#">Las Vegas, NV</a></li>
+		                        <li><a href="#">Los Angeles, CA</a></li>
+		                        <li><a href="#">Memphis, TN</a></li>
+		                        <li><a href="#">Miami, FL</a></li>
+		                        <li><a href="#">Minneapolis, MN</a></li>
+		                        <li><a href="#">Nashville, TN</a></li>
+		                        <li><a href="#">Oklahoma City, OK</a></li>
+		                        <li><a href="#">Philadelphia, PA</a></li>
+		                        <li><a href="#">Phoenix, AZ</a></li>
+		                        <li><a href="#">Portland, OR</a></li>
+		                        <li><a href="#">San Antonio, TX</a></li>
+		                        <li><a href="#">San Diego, CA</a></li>
+		                        <li><a href="#">San Francisco, CA</a></li>
+		                        <li><a href="#">San Jose, CA</a></li>
+		                        <li><a href="#">Seattle, WA</a></li>
+		                    </ul>
+						</div>
+		            </div>
+		            {#{% if not request.user.is_authenticated or request.user.is_client %}#}
+		        
+		            {#{% endif %}#}
+	            </div>
+            </div>
+            {#{% if not request.user.is_authenticated or request.user.is_client %}#}
+                <a class="prof-button big-blue-btn js-start-request" href="#">
+                    <span class="inner">
+                        <em>{% trans "Start your service request" %}</em>
+                        <i class="fa fa-angle-right text-center"></i>
+                    </span>
+                </a>
+                {#{% endif %}#}
+        </div>
+        <div class="footer-column footer-sitemap light-blue-back">
+            <div class="footer-inner">
+	            <div class="footer-sitemap-top">
+		            <div class="footer-container footer-right">
+			            <h5 class="text-dark-blue text-uppercase">Site map</h5>
+			            <h6 class="text-white text-uppercase">
+			              {% trans "For clients" %}
+			            </h6>
+			            <ul class="list-unstyled text-white">
+			              <li>
+		                    <a href="">
+		                      {% trans "How-to for clients" %} <i class="fa fa-chevron-right"></i>
+		                    </a>
+		                  </li>
+		                  
+			              <li>
+			                <a href="">
+			                  {% trans "Your Rionta hometeam" %} <i class="fa fa-chevron-right"></i>
+			                </a>
+			              </li>
+			
+			              <li>
+			                <a href="">
+			                  {% trans "Help when you need it" %} <i class="fa fa-chevron-right"></i>
+			                </a>
+			              </li>
+
+			                <a href="">
+			                  {% trans "Best rated pro near you" %} <i class="fa fa-chevron-right"></i>
+			                </a>
+			              </li>
+			
+			              <li>
+			                <a href="">
+			                  {% trans "See what people are saying" %} <i class="fa fa-chevron-right"></i>
+			                </a>
+			              </li>
+			            </ul>
+		            </div>
+		            
+	                <a href="" data-url="" class="join-link text-uppercase js-form-modal js-modal-transparent">
+	                  {% trans "Join as a client" %}
+	                </a>
+                </div>
+                <div class="footer-container footer-right">
+                <h6 class="text-white text-uppercase for-professionals">
+                  {% trans "For professionals" %}
+                </h6>
+
+                <ul class="list-unstyled text-white">
+                  <li>
+                    <a href="">
+                      {% trans "How-to for professionals" %} <i class="fa fa-chevron-right"></i>
+                    </a>
+                  </li>
+                  
+                  <li>
+                    <a href="">
+                      {% trans "Rionta advantages" %} <i class="fa fa-chevron-right"></i>
+                    </a>
+                  </li>
+
+                  <li>
+                    <a href="">
+                      {% trans "Your rionta homepage" %} <i class="fa fa-chevron-right"></i>
+                    </a>
+                  </li>
+
+                  <li>
+                    <a href="">
+                      {% trans "Stay in touch with your clients" %} <i class="fa fa-chevron-right"></i>
+                    </a>
+                  </li>
+
+                  <li>
+                    <a href="">
+                      {% trans "Unlimited leads" %} <i class="fa fa-chevron-right"></i>
+                    </a>
+                  </li>
+
+                  <li>
+                    <a href="">
+                      {% trans "Additional perks & services" %} <i class="fa fa-chevron-right"></i>
+                    </a>
+                  </li>
+
+                  <li>
+                    <a href="">
+                      {% trans "Rionta reviews from professionals" %} <i class="fa fa-chevron-right"></i>
+                    </a>
+                  </li>
+                </ul>
+                </div>
+                
+                <a href="" data-url="" class="join-link text-uppercase js-form-modal js-modal-transparent">
+                  {% trans "Join as a professional" %}
+                </a>
+                
+            </div>
+        </div>
+      </div>
+      {% endblock %}
+      
+      <div class="footer-bottom text-center">
+        <img src="{% block logo-bottom-src %}{% static 'images/big-logo.png' %}{% endblock %}">
+        <div class="container">
+          <div class="row">
+            <div class="col">
+
+              <ul class="list-inline bottom-menu">
+                <li class="list-inline-item">
+                  <a href="/">
+                    {% trans "Home" %}
+                  </a>
+                </li>
+
+                <li class='list-inline-item'>
+                  <a href="">
+                    {% trans "Terms and conditions" %}
+                  </a>
+                </li>
+
+                <li class='list-inline-item'>
+                  <a href="">
+                    {% trans "Privacy policy" %}
+                  </a>
+                </li>
+
+                <li class='list-inline-item'>
+                  <a href="">
+                    {% trans "Help" %}
+                  </a>
+                </li>
+
+                <li class='list-inline-item'>
+                  <a href="">
+                    {% trans "About" %}
+                  </a>
+                </li>
+              </ul>
+              
+              <ul class="list-unstyled list-inline footer_social_links">
+                <li class='list-inline-item'>
+                  <a href="{{ constance.FACEBOOK_LINK }}">
+                    <i class="fab fa-facebook-f"></i>
+                  </a>
+                </li>
+
+                <li class='list-inline-item'>
+                  <a href="{{ constance.LINKED_IN_LINK }}">
+                    <i class="fab fa-google-plus-g"></i>
+                  </a>
+                </li>
+
+                <li class='list-inline-item'>
+                  <a href="{{ constance.GOOGLE_PLUS_LINK }}">
+                    <i class="fab fa-linkedin-in"></i>
+                  </a>
+                </li>
+
+                <li class='list-inline-item'>
+                  <a href="{{ constance.TWITTER_LINK }}">
+                    <i class="fab fa-twitter"></i>
+                  </a>
+                </li>
+              </ul>
+
+{#              <a class="develop-by"#}
+{#                  href="http://bergsoftplus.com/"#}
+{#                  target="_blank"#}
+{#                  title="{% trans 'Powered by BERGSOFT+' %}">#}
+{#                <img src="{% static 'images/bergsoft-logos/logo50x51_white.png' %}"#}
+{#                    alt="{% trans 'Built by BERGSOFT+' %}">#}
+{#              </a>#}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="dark-back copyright text-center">
+        <span>&copy; Copyrights Rionta Technologies, Inc. 2017-{% now "Y" %}.</span>
+     </div>
+    </footer>
+  {% endblock footer %}
+</div>
+
+<!-- Modal small -->
+<div class="modal fade" id="js-modal" tabindex="-1" role="dialog"
+    aria-labelledby="js-modal-label" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="js-modal-label">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal large -->
+<div class="modal fade" id="js-modal-lg" tabindex="-1" role="dialog"
+    aria-labelledby="js-modal-lg-label" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="js-modal-lg-label">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-image-bg">
+    <div>
+    {% if request.user.is_authenticated %}
+        {% if request.user.is_client %}
+        <img src="{% static 'images/main-screen/client.jpg' %}">
+        {% elif request.user.is_pro %}
+        <img src="{% static 'images/main-screen/pro.jpg' %}">
+        {% else %}
+        <img src="{% static 'images/main-screen/default.jpg' %}">
+        {% endif %}
+    {% else %}
+    <img src="{% static 'images/main-screen/default.jpg' %}">
+    {% endif %}
+    </div>
+</div>
+
+<div class="js-tender-modal-container"></div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+<script>
+  WebFont.load({
+    google: {
+      families: ['Droid Sans', 'Droid Serif']
+    }
+  });
+</script>
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/jquery-confirm.min.js' %}"></script>
+<script src="{% static 'js/jquery.form.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.17.0 /dist/jquery.validate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCZR4g2ScuKWb5NqZpNLsLBr0-36kXdkyo&libraries=places&callback=initAutocomplete&language=en" async defer></script>
+{% if not settings.DEBUG and not settings.LOCAL_DEV_MODE %}
+  <script src="https://cdn.ravenjs.com/3.14.0/raven.min.js"></script>
+  <script>
+    Raven.config('http://0909870cf37a45a485c023d1b4cde4d4@sentry7.bs-dev.org/37').install()
+  </script>
+{% endif %}
+  <script>
+    var SITE = {
+        isAnonymous: {{ request.user.is_anonymous|yesno:"true,false" }},
+        userId: {{ request.user.id|default:0 }},
+        playSoundNotification: {{ request.user.play_notification_sound|yesno:"true,false" }}
+    };
+  </script>
+  <script src="{% static 'assets/datetimepicker/datetimepicker.min.js' %}"></script>
+  <script src="{% static 'assets/owl-carousel/js/owl.carousel.js' %}"></script>
+  <script src="{% static 'el-pagination/js/el-pagination.js' %}"></script>
+  <script src="{% static 'js/jquery.inputmask.bundle.js' %}"></script>
+  <script src="{% static 'js/ajax-setup.js' %}"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+
+
+{% block extra_js %}{% endblock extra_js %}
+{% block counters-footer %}
+  {% if not settings.DEBUG and not settings.LOCAL_DEV_MODE %}
+  {% endif %}
+{% endblock %}
+
+</body>
+</html>

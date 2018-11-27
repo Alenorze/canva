@@ -1,0 +1,12 @@
+<script>
+  $(document).ready(function() {
+    if ($('.js-datetimepicker').length) {
+      $('.js-datetimepicker').datetimepicker({
+        'formatDate': 'm/d/Y',
+        'formatTime': 'h:i A',
+        'format': 'm/d/Y h:i A',
+        'validateOnBlur': false,
+      })
+    }
+  });
+</script>

@@ -1,0 +1,41 @@
+{% load i18n %}
+
+<div class="container bg-color">
+  <div class='row'>
+    <nav aria-label="Page navigation" class='text-center'>
+      <ul class="pagination">
+
+        {% if page_obj.has_previous %}
+          <li>
+            <a href="?page={{ page_obj.previous_page_number }}" aria-label="Previous" title="{% trans 'Previous page' %}">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+              {{ page_obj.previous_page_number }}
+            </a>
+          </li>
+        {% endif %}
+
+        <li><a href="#">{{ page_obj.number }}</a></li>
+
+        {% if page_obj.has_next %}
+          <li>
+            <a href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+              {{ page_obj.next_page_number }}
+            </a>
+          </li>
+
+          <li>
+            <a href="?page={{ page_obj.next_page_number }}" aria-label="Next" title="{% trans 'Next page' %}">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        {% endif %}
+
+      </ul>
+    </nav>
+  </div>
+</div>

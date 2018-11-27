@@ -1,0 +1,5 @@
+Django
+djangorestframework
+markdown 
+jsonfield
+drf-writable-nested

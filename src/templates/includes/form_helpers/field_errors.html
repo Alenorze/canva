@@ -1,0 +1,6 @@
+
+<div class="invalid-feedback">
+    {% for error in form_field.errors %}
+        {{ error|escape }}{% if not forloop.last %}<br />{% endif %}
+    {% endfor %}
+</div>

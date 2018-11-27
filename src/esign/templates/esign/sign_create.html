@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+
+{% block main-nav %}{% with ActiveMenu="faq" %}{{ block.super }}{% endwith %}{% endblock %}
+
+{% block crumbs %}
+  <li itemprop="itemListElement" class='breadcrumb-item active'
+      itemscope itemtype="{{ request.scheme }}://schema.org/ListItem">
+    <span itemprop="name">{{ object.title }}</span>
+  </li>
+{% endblock %}
+
+{% block content-full %}
+<style>
+	main {
+		background-color: #f4f4f4;
+		}
+</style>
+
+	<div class="container">
+		<div id='rightBlockForm' class="default">
+			<a href="/" class='btnNext'>next</a>
+		</div>
+		<div class="formBlockWrapper">
+			<div class="formBlockHeader">
+				<h2>add recipients</h2>
+				<h5 id='user'></h5>
+				<label for="checkBox">
+					<input type="checkbox" id='checkBox'>
+					I have to sign
+				</label>
+			</div>
+			<div class="formBlock-wrapper">
+			</div>
+			<button class='btnAddRecipient' onclick="$(this).addRecipient()">add recipient</button>
+			<div class="infoPopUp">
+				<i class="fas fa-times-circle infoPopUpFaTimesCircle"></i>
+				<p>You did not fill all fields!</p>
+			</div>
+		</div>
+	</div>
+	{% block extra_js %}
+
+	<script>
+			$(document).ready(function() {
+			var htmlForm = `<div class="formBlock">
+										 <div class="wraperInput">
+												<input type="text" class='inputIndex' oninput="$(this).sortForm()">    
+										 </div>
+										 <i class="fas fa-times-circle faTimesCircle" onclick="$(this).deleteRecipient()"></i>
+											<form class='form' onclick="$(this).validateForm()">
+													<span class='addCompanyName' onclick="$(this).addCompanyName()">add input</span>
+													<div class="formSortable">
+														 <div class="formSortablePoint"></div> 
+													</div>
+													<div class='input-wrapper inp-name'>
+															<label for="first_name" class="formBlock-label">
+																	<i class="fas fa-star"></i>
+															</label>
+															<input id="first_name" class="first_name formBlock-input check" type="text" placeholder="name" name='name'>
+															<i class="fas fa-user faUser"></i>
+													</div>
+													 <div class='input-wrapper'>
+															<label for="email" class="formBlock-label">
+															<i class="fas fa-star"></i></label>
+															<input id="email" class="email formBlock-input check" type="email" placeholder="email" name='email'>
+															<i class="fas fa-envelope faEnvelope"></i>
+													</div>
+													<div class='input-wrapper inputWrapperCompany'>
+															<label for="company" class="formBlock-label"></label>
+															<input id="company"class="formBlock-input company" type="text" placeholder="company" name='company'>
+															<i class="fas fa-building faBuilding"></i>
+													</div>
+											</form>
+								</div>`;
+
+			var arrRecipients = [];
+			let indexForm = [];
+			let positionFormArr = [];
+			var ifNameCompany = 0;
+			var disableLink = 0;
+			var formBlockWrapper = $('.formBlock-wrapper');
+			var rightBlockForm = $("#rightBlockForm");
+			var arrayAgent = [];
+
+			//load the form
+			$(window).on('load', function() {
+				formBlockWrapper.append(htmlForm);
+				addFormNum();
+				$.get('http://localhost:8000/esign/api/user', function(data) {
+					data['name'] = data['first_name'] + ' ' + data['last_name'];
+					arrayAgent = data;
+					$('#user').text(arrayAgent.name);
+				});
+			});
+
+			//move form
+			//formBlockWrapper.on('mousedown', function (e) {
+			formBlockWrapper.sortable({
+				handle: ".formSortablePoint",
+				axis: "y",
+				//addClasses: false,
+				//sort: function (e, ui) {},
+				stop: function() {
+					addFormNum();
+				}
+			});
+			//});
+
+			//add form
+			$.fn.addRecipient = function() {
+				var formBlock = $('.formBlock');
+				if (formBlock.length > 0) {
+					$('.formBlock:last').after(htmlForm);
+				} else {
+					formBlockWrapper.append(htmlForm);
+				}
+				let positionForm;
+				formBlock.each(function(i, val) {
+					indexForm[i] = $(this);
+					positionForm = parseInt($(this).position().top)
+					positionFormArr.push(positionForm);
+				});
+				addFormNum();
+			};
+
+			//add form numbering
+			function addFormNum() {
+				var index;
+				var inputIndex = $('.inputIndex');
+				for (i = 0; i < inputIndex.length; i++) {
+					inputIndex.eq(i).attr('data-info', i);
+					index = 1 + i;
+					inputIndex.eq(i).attr('placeholder', index);
+					inputIndex.eq(i).val('');
+				}
+			}
+
+			//remove form
+			$.fn.deleteRecipient = function() {
+				$(this).parent().remove();
+				addFormNum();
+			};
+
+			//add agent data 
+			$('#checkBox').one('click', function() {
+				if ($(this).prop("checked")) {
+					$('.first_name').each(function(i, val) {
+						if ($(this).val() == '') {
+							$(this).val(arrayAgent.name);
+							return false;
+						}
+					});
+					if (ifNameCompany == 1) {
+						$('.company').each(function(i, val) {
+							if ($(this).val() == '') {
+								$(this).val(arrayAgent.company);
+								return false;
+							}
+						});
+					}
+				}
+				$('.form').each(function(j, val) {
+					var arrForm = [];
+					arrForm = $(this);
+					let object = {};
+				});
+			});
+
+			//add email
+			$('#checkBox').on('click', function() {
+				if ($(this).prop("checked")) {
+					$('.email').each(function(i, val) {
+						if ($(this).val() == '') {
+							$(this).val(arrayAgent.email);
+							return false;
+						}
+					});
+				}
+			});
+
+			//add data to the database
+			$('.btnNext').on('click', function(e) {
+				let arrForm = [];
+				let flag = true;
+				$('.form').each(function(j, val) {
+					arrForm[j] = val;
+					let object = {}
+					jQuery.each(arrForm[j], function(i, val) {
+						object[this.name] = $(val).val();
+						if (object.name == '' || object.email == '') {
+							$('.infoPopUp').fadeIn(100);
+							flag = false;
+							e.preventDefault();
+							return false;
+						}
+					});
+					if (flag == false) {
+						arrRecipients = [];
+					} else {
+						arrRecipients.push(object);
+						disableLink = 1;
+					}
+				});
+				if (disableLink == 1) {
+					data = {}
+					data['forms'] = arrRecipients;
+					console.log(data)
+					$.ajax({
+						url: 'http://localhost:8000/esign/api/request/',
+						type: 'POST',
+						crossDomain: true,
+						data: JSON.stringify(data),
+						contentType: 'application/json; charset=utf-8',
+						dataType: 'json',
+						async: false,
+						success: function(msg) {
+							console.log(msg);
+						}
+					});
+				}
+			});
+
+			//hide popup notification
+			$('.infoPopUpFaTimesCircle').on('click', function() {
+				$('.infoPopUp').fadeOut(100);
+			});
+
+			//scroll block with button 
+			$(window).scroll(function() {
+				console.log($(this).scrollTop());
+				if ($(this).scrollTop() >= 70 && rightBlockForm.hasClass("default")) {
+					rightBlockForm.removeClass("default").addClass("fixed");
+				} else if ($(this).scrollTop() <= 70 && rightBlockForm.hasClass("fixed")) {
+					rightBlockForm.removeClass("fixed").addClass("default");
+				}
+			});
+
+			//
+			$.fn.validateForm = function() {
+				$(this).validate({
+					rules: {
+						name: {
+							required: true,
+							minlength: 3
+						},
+						email: {
+							required: true,
+							email: true
+						}
+					}
+				});
+			};
+
+			//add input company
+			$.fn.addCompanyName = function() {
+				ifNameCompany = 1;
+				$(this).parent('.form').children('.inputWrapperCompany').css('display', 'block');
+			}
+
+			//sort the forms by index
+			$.fn.sortForm = function() {
+				var inputIndex = $('.inputIndex');
+				var FormHtml = $(this).parent().parent();
+				console.log(FormHtml)
+				var num = $(this).val();
+				var dataInfo = $(this).attr('data-info');
+				if (num > inputIndex.length) {
+					num = inputIndex.length - 1;
+					console.log(num);
+				} else {
+					num--
+					console.log(num);
+				}
+				if (num < dataInfo) {
+					$('.formBlock:eq(' + num + ')').before(FormHtml);
+				} else {
+					$('.formBlock:eq(' + num + ')').after(FormHtml);
+				}
+				addFormNum();
+			};
+		});
+		</script>
+	{% endblock extra_js %}
+
+  {% if request.user.is_authenticated %}
+    {% include "includes/mobile_sidebar.html" %}
+  {% endif %}
+{% endblock %}

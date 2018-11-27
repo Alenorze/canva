@@ -1,0 +1,11 @@
+{% load form_snippets_tags %}
+<div class="form-group">
+    <label for="{{ form_field.id_for_label }}">{{ form_field.label }}:</label>
+    {{ form_field|css_class:"form-control"|err_class:'is-invalid' }}
+    {% if form_field.errors %}
+        {% include "includes/form_helpers/field_errors.html" %}
+    {% endif %}
+    {% if form_field.help_text %}
+        {% include "includes/form_helpers/field_help_text.html" %}
+    {% endif %}
+</div>
